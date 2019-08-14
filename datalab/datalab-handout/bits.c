@@ -143,7 +143,7 @@ NOTES:
  *   Rating: 1
  */
 int bitXor(int x, int y) {
-  return 2;
+    return ~(x&y) & (~(~x & ~y)); 
 }
 /* 
  * tmin - return minimum two's complement integer 
@@ -152,9 +152,7 @@ int bitXor(int x, int y) {
  *   Rating: 1
  */
 int tmin(void) {
-
-  return 2;
-
+    return 1 << 31;
 }
 //2
 /*
@@ -165,7 +163,7 @@ int tmin(void) {
  *   Rating: 1
  */
 int isTmax(int x) {
-  return 2;
+    return !(~(x ^ (x + 1))) & !!(~x);
 }
 /* 
  * allOddBits - return 1 if all odd-numbered bits in word set to 1
@@ -176,7 +174,10 @@ int isTmax(int x) {
  *   Rating: 2
  */
 int allOddBits(int x) {
-  return 2;
+    int a = 0xAA | 0xAA << 8;
+    a = a | 0xAA << 16;
+    a = a | 0xAA << 24;
+    return !((a&x)^a);
 }
 /* 
  * negate - return -x 
@@ -186,7 +187,7 @@ int allOddBits(int x) {
  *   Rating: 2
  */
 int negate(int x) {
-  return 2;
+  return ~x + 1;
 }
 //3
 /* 
@@ -199,7 +200,9 @@ int negate(int x) {
  *   Rating: 3
  */
 int isAsciiDigit(int x) {
-  return 2;
+    int max = (0x39 + (~x + 1)) >> 31;
+    int min = (x + (~0x30 + 1)) >> 31;
+    return ((max | min) & 1) ^ 1;
 }
 /* 
  * conditional - same as x ? y : z 
@@ -209,7 +212,8 @@ int isAsciiDigit(int x) {
  *   Rating: 3
  */
 int conditional(int x, int y, int z) {
-  return 2;
+    x = (!!x) << 31 >> 31;
+    return (x & y) | (~x & z);
 }
 /* 
  * isLessOrEqual - if x <= y  then return 1, else return 0 
@@ -218,8 +222,23 @@ int conditional(int x, int y, int z) {
  *   Max ops: 24
  *   Rating: 3
  */
+
+// 判断 y-x 即可
+// 此时只需要考虑符号不同的情况，符号相同的情况不会溢出
+// 符号不同时可能会负溢出，需要特殊处理
+// 符号不同负溢出的情况只存在于 y 为整数， x 为负数
+// 此时只需要返回 y 的符号位即可
+
 int isLessOrEqual(int x, int y) {
-  return 2;
+    // 符号是否一致
+    int a = !(y>>31 ^ x>>31);
+
+    // 符号一致时，a = 1，置反 a 使判断符号的结果为 0 
+    // 当符号不一致时，a = 0 ， 使判断 y-x 的结果为 0 
+    // 两种情况下 a 分别为另一边的掩码, 将另一边的结果置为0，避免影响结果
+    
+    int b = a & !((y + ~x + 1) >> 31);
+    return ((!(y>>31)) & ~a) | b;
 }
 //4
 /* 
