@@ -249,8 +249,23 @@ int isLessOrEqual(int x, int y) {
  *   Max ops: 12
  *   Rating: 4 
  */
+
+// 只有 0 和 INT_MIN 的补码符号位不会改变
+// 正常情况下如果符号位不同 或者 x 为 INT_MIN 则返回 0 
+// 其他情况返回 1
 int logicalNeg(int x) {
-  return 2;
+    int y = ~x + 1;
+
+    // sign 为 1 时表示符号位不同
+    // 此时函数应该返回 0 ，但如果 xIsNeg 为 1, 则应该返回 1 。
+    int sign = (y >> 31 ^ (x >> 31)) & 1;
+    int xIsNeg = ((x >> 31) & 1);
+
+    int a = (sign | xIsNeg);
+
+    // 此时 a 要么为 1 要么为 0
+    // 需要将结果置反才可得到正确答案
+    return a ^ 1;
 }
 /* howManyBits - return the minimum number of bits required to represent x in
  *             two's complement
