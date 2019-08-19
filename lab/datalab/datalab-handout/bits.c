@@ -250,7 +250,7 @@ int isLessOrEqual(int x, int y) {
  *   Rating: 4 
  */
 
-// 只有 0 和 INT_MIN 的补码符号位不会改变
+// 只有 0 和 INT_MIN 取其负数, 符号位不会改变
 // 正常情况下如果符号位不同 或者 x 为 INT_MIN 则返回 0 
 // 其他情况返回 1
 int logicalNeg(int x) {
@@ -279,6 +279,9 @@ int logicalNeg(int x) {
  *  Max ops: 90
  *  Rating: 4
  */
+
+// 返回需要多少位才可以表示 x 的二进制补码
+// 正数的补码为本身，而负数的补码为 ~x + 1
 int howManyBits(int x) {
   return 0;
 }
