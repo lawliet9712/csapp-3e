@@ -290,15 +290,16 @@ int logicalNeg(int x) {
 // 此外 16 + 8 + 4 + 2 + 1 为 31，最高只能表示 31 位，而如 TMIN 实际上需要 32 位
 int howManyBits(int x) {
     int tmp = x ^ (x << 1);
-    int bit_16 = !!(tmp >> 16) << 4;
+    int bit_16, bit_8, bit_4, bit_2, bit_1;
+    bit_16 = !!(tmp >> 16) << 4;
     tmp = tmp >> bit_16;
-    int bit_8 = !!(tmp >> 8) << 3;
+    bit_8 = !!(tmp >> 8) << 3;
     tmp = tmp >> bit_8;
-    int bit_4 = !!(tmp >> 4) << 2;
+    bit_4 = !!(tmp >> 4) << 2;
     tmp = tmp >> bit_4;
-    int bit_2 = !!(tmp >> 2) << 1;
+    bit_2 = !!(tmp >> 2) << 1;
     tmp = tmp >> bit_2;
-    int bit_1 = !!(tmp >> 1);
+    bit_1 = !!(tmp >> 1);
 
     return bit_16 + bit_8 + bit_4 + bit_2 + bit_1 + 1;
 }
