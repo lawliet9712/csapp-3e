@@ -314,8 +314,38 @@ int howManyBits(int x) {
  *   Max ops: 30
  *   Rating: 4
  */
+
+// 将 uf 视为浮点数, 返回其 * 2 之后的值
+// 浮点数的计算公式为 V = (-1)^S * M * 2^E
+// 其中 S为符号位，M 为尾数，E为阶码值
+// 浮点数扩大 2 倍即 V * 2
+// 浮点数有规格化值和非规格化值以及 NaN
+// NaN 时直接返回，现在考虑规格化和非规格化的 E 值
+// 规格化 E = e - 127  , 非规格化 E = 1 - 127
+// 非规格化情况下，由于阶码位全为 0，所以将 uf << 1 即可
+// 此时若左移到阶码位最低位，也不影响阶码值，且此时 M = 1 + f
+// 需要注意保留符号位
+// 规格化情况下，使 e + 1，即阶码位加 1 
 unsigned floatScale2(unsigned uf) {
-  return 2;
+    unsigned S = (uf >> 31) & 1;
+    unsigned e = (uf >> 23) & 0xFF;
+
+    // 非规格化
+    if(e == 0)
+    {
+        return (uf << 1) | (S << 31);
+    }
+
+    // NaN
+    if(e == 0XFF)
+    {
+        return uf;
+    }
+    // 规格化值
+    else
+    {
+        return uf + (1 << 23);
+    }
 }
 /* 
  * floatFloat2Int - Return bit-level equivalent of expression (int) f
