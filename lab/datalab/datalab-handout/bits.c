@@ -281,9 +281,26 @@ int logicalNeg(int x) {
  */
 
 // 返回需要多少位才可以表示 x 的二进制补码
-// 正数的补码为本身，而负数的补码为 ~x + 1
+// x的最高位前面必定全为 0 或者全为 1
+// x ^ (x << 1) 可以得到最高位为 1 的位置即是表示 x 所需的位数
+// 采用类似二分法的思想
+// 每次右移 x 位，如果右移后 !! 的值为 1 ，说明其最高位定然在最高有效 x 位那边
+// 此时起码需要低x位才可以表示 x ，因为每次都是对半进行查找
+// 结果需要加 1， 因为最少也需要 1 位才可表示 x
+// 此外 16 + 8 + 4 + 2 + 1 为 31，最高只能表示 31 位，而如 TMIN 实际上需要 32 位
 int howManyBits(int x) {
-  return 0;
+    int tmp = x ^ (x << 1);
+    int bit_16 = !!(tmp >> 16) << 4;
+    tmp = tmp >> bit_16;
+    int bit_8 = !!(tmp >> 8) << 3;
+    tmp = tmp >> bit_8;
+    int bit_4 = !!(tmp >> 4) << 2;
+    tmp = tmp >> bit_4;
+    int bit_2 = !!(tmp >> 2) << 1;
+    tmp = tmp >> bit_2;
+    int bit_1 = !!(tmp >> 1);
+
+    return bit_16 + bit_8 + bit_4 + bit_2 + bit_1 + 1;
 }
 //float
 /* 
