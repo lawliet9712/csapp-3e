@@ -360,8 +360,41 @@ unsigned floatScale2(unsigned uf) {
  *   Max ops: 30
  *   Rating: 4
  */
+// 分为几种情况
+// 如果阶码位 e 大于 31 ，那么结果必定溢出
+// 如果阶码位 e 小于 0 ( 等于 0 时结果为 1 )，则等于 0
+// 过滤掉上述条件后 e 的区间为 [0, 31]
+// 接下来考虑 e = e - 23
+// 此时 e 的值表明 uf 尾数位所需移动的尾数
+// 如果 e > 0 , 则左移 e 位
+// 如果 e < 0 , 则右移 |e| 位
+// 最后根据符号位返回
 int floatFloat2Int(unsigned uf) {
-  return 2;
+
+    // NaN or infinity
+    int e = ((uf >> 23) & 0xFF) - 127;
+    unsigned M = (uf | 0x80 << 24) & 0xffffff;
+
+    if(e > 31)
+    {
+        return 0x80 << 24;
+    }
+
+    if(e < 0)
+    {
+        return 0;
+    }
+    
+    if(e >= 23)
+    {
+        M <<= (e - 23);
+    }
+    else
+    {
+        M >>= (23 - e ); 
+    }
+
+    return (uf >> 31 ) ? -M : M;
 }
 /* 
  * floatPower2 - Return bit-level equivalent of the expression 2.0^x
@@ -376,6 +409,25 @@ int floatFloat2Int(unsigned uf) {
  *   Max ops: 30 
  *   Rating: 4
  */
+
+// 初始值为 V = 2^1 * 1.0
+// 求 V 的 x 次方
+// 初始值的 e = 128，但是当 x = 1 时，V 不变，因此需要将 e - 1
+// 现在所求为 e + x, 由于尾数为 0， 因此只要将 e + x 的值放置于阶码位即可
+// 接下来需要排除题目中的情况，首先排除阶码溢出的情况，即 e + x < 255，此时返回 INF
+// 考虑结果为小数的情况，即 e + x <= 0, 此时返回 0 
+// 剩下将 e + x 的值左移 23 位即可
 unsigned floatPower2(int x) {
-    return 2;
+    if (x > 127)
+    {
+        return 0x7f800000;
+    }
+    else if (x < -127)
+    {
+        return 0x0;
+    }
+    else
+    {
+        return (x + 127) << 23;
+    }   
 }

@@ -101,6 +101,7 @@ unsigned test_floatPower2(int x) {
   float p2 = 2.0;
   int recip = (x < 0);
   /* treat tmin specially */
+  
   if ((unsigned)x == 0x80000000) {
       return 0;
   }
@@ -108,9 +109,11 @@ unsigned test_floatPower2(int x) {
     x = -x;
     p2 = 0.5;
   }
-  while (x > 0) {
+
+  while (x > 0) 
+  {
     if (x & 0x1)
-      result = result * p2;
+        result = result * p2;
     p2 = p2 * p2;
     x >>= 1;
   }
