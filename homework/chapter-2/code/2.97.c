@@ -89,6 +89,7 @@ float_bits float_i2f(int i) {
         exp_sig = exp << 23 | frac;
 
         /* round to even */
+        // 此时round_mid = 1/2
         if (round_part < round_mid) {
             /* nothing */
 
