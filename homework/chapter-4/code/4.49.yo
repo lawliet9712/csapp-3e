@@ -1,0 +1,63 @@
+                            | # 从地址 0 开始执行
+0x000:                      | .pos 0
+0x000: 30f40002000000000000 | irmovq stack, %rsp      # Set up stack pointer
+0x00a: 803800000000000000   | call main        # Execute main program
+0x013: 00                   | halt        # Terminate program 
+                            | 
+                            | # 四个元素的数组
+0x018:                      | .align 8
+0x018:                      | array:
+0x018: bc0a000000000000     | .quad 0x000000000abc
+0x020: bc00000000000000     | .quad 0x0000000000bc
+0x028: 0c00000000000000     | .quad 0x00000000000c
+0x030: 0100000000000000     | .quad 0x000000000001
+                            | 
+                            | # 主函数
+0x038:                      | main:
+0x038: 30f71800000000000000 | irmovq array, %rdi
+0x042: 30f60400000000000000 | irmovq $4, %rsi
+0x04c: 805600000000000000   | call bubble_b    # bubble(array, 4)
+0x055: 90                   | ret
+                            | 
+                            | # void bubble_b(long *data, long count)
+                            | # data in %rdi, count in %rsi
+0x056:                      | bubble_b:
+0x056: 30f80800000000000000 |     irmovq $8, %r8
+0x060: 30f90100000000000000 |     irmovq $1, %r9
+0x06a: 2060                 |     rrmovq %rsi, %rax
+0x06c: 6190                 |     subq   %r9, %rax  # %rax = last
+0x06e: 73d900000000000000   |     je Done
+0x077:                      | Loop1:
+0x077: 6311                 |     xorq %rcx, %rcx # int i = 0
+0x079:                      | Loop2:
+0x079: 2012                 |     rrmovq %rcx, %rdx               # %rdx = i
+0x07b: 6022                 |     addq   %rdx, %rdx               # %rdx = 2 * i
+0x07d: 6022                 |     addq   %rdx, %rdx               # %rdx = 4 * i
+0x07f: 6022                 |     addq   %rdx, %rdx               # %rdx = 8 * i
+0x081: 6072                 |     addq   %rdi, %rdx               # %rdx = data + 8 * i 
+0x083: 50a20000000000000000 |     mrmovq (%rdx), %r10             # %r10 = data[i], data 是 long 类型故 i * 8
+0x08d: 6082                 |     addq   %r8, %rdx                # %rdx = data + 8 * i + 8
+0x08f: 50b20000000000000000 |     mrmovq (%rdx), %r11             # %r11 = data[i + 1]
+0x099: 20b3                 |     rrmovq %r11, %rbx               # %rbx = data[i + 1]
+0x09b: 61ab                 |     subq   %r10, %r11               # if (data[i+1] < data[i])
+                            |     # jge Test1
+                            |     # rmmovq %r10, (%rdx)
+                            |     # subq %r8, %rdx
+                            |     # rmmovq %rbx, (%rdx)
+0x09d: 30fc0000000000000000 |     irmovq $0, %r12
+0x0a7: 228c                 |     cmovl %r8, %r12
+0x0a9: 40a20000000000000000 |     rmmovq %r10, (%rdx)
+0x0b3: 61c2                 |     subq %r12, %rdx
+0x0b5: 40320000000000000000 |     rmmovq %rbx, (%rdx)
+0x0bf:                      | Test1:
+0x0bf: 6091                 |     addq %r9, %rcx
+0x0c1: 201c                 |     rrmovq %rcx, %r12
+0x0c3: 610c                 |     subq %rax, %r12
+0x0c5: 727900000000000000   |     jl Loop2
+0x0ce: 6190                 |     subq %r9, %rax
+0x0d0: 767700000000000000   |     jg Loop1
+0x0d9:                      | Done:
+0x0d9: 90                   |     ret                                 # Return
+                            | # 栈从 0x200 向低地址生长
+0x200:                      | .pos 0x200
+0x200:                      | stack:

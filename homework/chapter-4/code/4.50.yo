@@ -1,0 +1,53 @@
+                            | # 从地址 0 开始执行
+0x000:                      | .pos 0
+0x000: 30f40002000000000000 | irmovq stack, %rsp      # Set up stack pointer
+0x00a: 804800000000000000   | call main        # Execute main program
+0x013: 00                   | halt        # Terminate program 
+                            | 
+0x018:                      | .align 8
+0x018:                      | array:
+0x018: ad00000000000000     | .quad 0x000000000ad # case 0
+0x020: e600000000000000     | .quad 0x000000000e6 # case 1 default case
+0x028: c000000000000000     | .quad 0x000000000c0 # case 2
+0x030: d300000000000000     | .quad 0x000000000d3 # case 3
+0x038: e600000000000000     | .quad 0x000000000e6 # case 4 default case
+0x040: c000000000000000     | .quad 0x000000000c0 # case 5
+                            | 
+                            | # 主函数
+0x048:                      | main:
+0x048: 30f70600000000000000 | irmovq $6, %rdi
+0x052: 805c00000000000000   | call switchv    # switchv(1)
+0x05b: 90                   | ret
+                            | 
+                            | # void bubble_b(long *data, long count)
+                            | # data in %rdi, count in %rsi
+0x05c:                      | switchv:
+0x05c: 30f00000000000000000 |     irmovq $0, %rax
+0x066: 30f80600000000000000 |     irmovq $6, %r8
+0x070: 30f90100000000000000 |     irmovq $1, %r9
+0x07a: 30f31800000000000000 |     irmovq array, %rbx
+0x084: 2072                 |     rrmovq %rdi, %rdx              # %rdi > 6 default case
+0x086: 6182                 |     subq  %r8, %rdx
+0x088: 2597                 |     cmovge %r9, %rdi
+0x08a: 30f20000000000000000 |     irmovq $0, %rdx
+0x094: 6172                 |     subq %rdi, %rdx
+0x096: 2697                 |     cmovg %r9, %rdi                # %rdi < 0 default case
+0x098: 6077                 |     addq  %rdi, %rdi               # %rdi = 2 * i
+0x09a: 6077                 |     addq  %rdi, %rdi               # %rdi = 4 * i
+0x09c: 6077                 |     addq  %rdi, %rdi               # %rdi = 8 * i
+0x09e: 6073                 |     addq  %rdi, %rbx               # %rdi = array + 8 * i 
+0x0a0: 50330000000000000000 |     mrmovq (%rbx), %rbx
+0x0aa: a03f                 |     pushq %rbx
+0x0ac: 90                   |     ret                            # Return
+0x0ad: 30f0aa0a000000000000 |     irmovq $0xaaa, %rax
+0x0b7: 70f000000000000000   |     jmp Done
+0x0c0: 30f0bb0b000000000000 |     irmovq $0xbbb, %rax
+0x0ca: 70f000000000000000   |     jmp Done
+0x0d3: 30f0cc0c000000000000 |     irmovq $0xccc, %rax
+0x0dd: 70f000000000000000   |     jmp Done
+0x0e6: 30f0dd0d000000000000 |     irmovq $0xddd, %rax
+0x0f0:                      | Done:
+0x0f0: 90                   |     ret
+                            | # 栈从 0x200 向低地址生长
+0x200:                      | .pos 0x200
+0x200:                      | stack:

@@ -1,0 +1,58 @@
+# 从地址 0 开始执行
+.pos 0
+irmovq stack, %rsp      # Set up stack pointer
+call main        # Execute main program
+halt        # Terminate program 
+
+# 四个元素的数组
+.align 8
+array:
+.quad 0x000000000abc
+.quad 0x0000000000bc
+.quad 0x00000000000c
+.quad 0x000000000001
+
+# 主函数
+main:
+irmovq array, %rdi
+irmovq $4, %rsi
+call bubble_b    # bubble(array, 4)
+ret
+
+# void bubble_b(long *data, long count)
+# data in %rdi, count in %rsi
+bubble_b:
+    irmovq $8, %r8
+    irmovq $1, %r9
+    rrmovq %rsi, %rax
+    subq   %r9, %rax  # %rax = last
+    je Done
+Loop1:
+    xorq %rcx, %rcx # int i = 0
+Loop2:
+    rrmovq %rcx, %rdx               # %rdx = i
+    addq   %rdx, %rdx               # %rdx = 2 * i
+    addq   %rdx, %rdx               # %rdx = 4 * i
+    addq   %rdx, %rdx               # %rdx = 8 * i
+    addq   %rdi, %rdx               # %rdx = data + 8 * i 
+    mrmovq (%rdx), %r10             # %r10 = data[i], data 是 long 类型故 i * 8
+    addq   %r8, %rdx                # %rdx = data + 8 * i + 8
+    mrmovq (%rdx), %r11             # %r11 = data[i + 1]
+    rrmovq %r11, %rbx               # %rbx = data[i+1]
+    subq   %r10, %r11               # if (data[i+1] < data[i])
+    jge Test1
+    rmmovq %r10, (%rdx)
+    subq %r8, %rdx
+    rmmovq %rbx, (%rdx)
+Test1:
+    addq %r9, %rcx
+    rrmovq %rcx, %r12
+    subq %rax, %r12
+    jl Loop2
+    subq %r9, %rax
+    jg Loop1
+Done:
+    ret                                 # Return
+# 栈从 0x200 向低地址生长
+.pos 0x200
+stack:
