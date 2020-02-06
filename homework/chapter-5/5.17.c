@@ -13,13 +13,12 @@ void * effective_memset(void * s, int c, size_t n)
     unsigned char uchar_fill_var = (unsigned char) c;
     int tmp_cnt = n;
     unsigned char * uchar_s = (unsigned char *)s;
-    while (tmp_cnt % ulong_size != 0 && tmp_cnt > 0)
+    while ((size_t)uchar_s % ulong_size != 0 && tmp_cnt > 0)
     {
         (*uchar_s)++ = uchar_fill_var; 
         tmp_cnt--;
     }
     
-    tmp_cnt = n - tmp_cnt;
     int rest_not_algin_cnt = tmp_cnt % ulong_size;
     int loop_times = tmp_cnt / ulong_size; 
     unsigned long * ulong_s = (unsigned long *)uchar_s;
