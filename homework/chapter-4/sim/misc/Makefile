@@ -1,9 +1,9 @@
 CC=gcc
-CFLAGS=-Wall -O1 -g
+CFLAGS=-Wall -O1 -g 
 LCFLAGS=-O1
 LEX = flex
 YACC=bison
-LEXLIB = -lfl
+LEXLIB = -ll
 YAS=./yas
 
 all: yis yas hcl2c
