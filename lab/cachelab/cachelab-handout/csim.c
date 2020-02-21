@@ -28,12 +28,13 @@ typedef struct
 {
     uint64_t line_tag; 
     int is_vaild;
-    int hit_count;
+    int lru_var;
 } Line;
 
 typedef struct
 {
     Line * set_line;
+    int max_lru_var;
 } Set;
 
 typedef struct
@@ -98,7 +99,7 @@ void ReadOption(int argc, char * argv[], Parm * parm_value)
 Cache * InitCache(Parm * parm_value)
 {
     Cache * cache = malloc(sizeof(Cache));
-    cache->S = pow(2, parm_value->s);
+    cache->S = 1 << parm_value->s;
 
     Set * set_array = malloc(sizeof(Set) * cache->S);
     for (int i = 0; i < cache->S; i++)
@@ -111,11 +112,12 @@ Cache * InitCache(Parm * parm_value)
         }
 
         set_array[i].set_line = line_array;
+        set_array[i].max_lru_var = 0;
     }
 
     cache->cache_set = set_array;
     cache->E = parm_value->E;
-    cache->B = pow(2, parm_value->b);
+    cache->B = 1 << parm_value->b;
     return cache;
 }
 
@@ -137,7 +139,7 @@ Line * GetLRULine(Cache * cache, int set_index)
 
     for (int i = 1; i < cache->E ; i++)
     {
-        if (line_array[i].hit_count < line_eviction->hit_count) 
+        if (line_array[i].lru_var < line_eviction->lru_var) 
         {
             line_eviction = & line_array[i];
         }
@@ -169,11 +171,13 @@ void Calculate(Cache * cache, char cmd_type, int addr_set, uint64_t addr_tag)
             continue;
         }
 
+        // hit
         if (line_array[i].line_tag == addr_tag)
         {
             tmp_hit += 1; 
-            line_array[i].hit_count += 1; 
-            printf(" set %d , tag %lx \n", addr_set, addr_tag);
+            set->max_lru_var += 1;
+            line_array[i].lru_var = set->max_lru_var; 
+            printf("set %d , tag %lx lru_var %d\n", addr_set, addr_tag, set->max_lru_var);
             Settle(tmp_hit, tmp_miss, tmp_eviction);
             return;
         }
@@ -188,7 +192,9 @@ void Calculate(Cache * cache, char cmd_type, int addr_set, uint64_t addr_tag)
     tmp_miss += 1;
     line_eviction->is_vaild = 1;
     line_eviction->line_tag = addr_tag;
-    printf(" set %d , tag %lx \n", addr_set, addr_tag);
+    set->max_lru_var += 1;
+    line_eviction->lru_var = set->max_lru_var; 
+    printf("set %d , tag %lx lru_var %d\n", addr_set, addr_tag, set->max_lru_var);
 
     Settle(tmp_hit, tmp_miss, tmp_eviction);
 }
