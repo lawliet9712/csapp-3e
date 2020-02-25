@@ -242,11 +242,11 @@ int main(int argc, char * argv[])
     assert(parm_value);
     ReadOption(argc, argv, parm_value);
 
-
     Cache * cache = InitCache(parm_value);
     assert(cache);
 
     SimByTraceFile(cache, parm_value);
     printSummary(hit_count, miss_count, eviction_count);
+
     return 0;
 }
