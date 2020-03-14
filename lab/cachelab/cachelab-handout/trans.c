@@ -163,6 +163,7 @@ void trans_m61_n67(int M, int N, int A[N][M], int B[M][N])
 char transpose_submit_desc[] = "Transpose submission";
 void transpose_submit(int M, int N, int A[N][M], int B[M][N])
 {
+#if 0
     if (M == 32 && N == 32)
     {
         trans_m32_n32(M, N, A, B);
@@ -174,6 +175,23 @@ void transpose_submit(int M, int N, int A[N][M], int B[M][N])
     else if (M == 61 && N == 67)
     {
         trans_m61_n67(M, N, A, B);
+    }
+#endif
+
+    int i, j, k;
+    for (i = 0; i < N ; i+=8) {
+        for (j = 7; j < M; j+=8) {
+            for (k = i; k < i+ 8 && k < N; k++){
+                B[j-7][k] = A[k][j-7];
+                B[j-6][k] = A[k][j-6];
+                B[j-5][k] = A[k][j-5];
+                B[j-4][k] = A[k][j-4];
+                B[j-3][k] = A[k][j-3];
+                B[j-2][k] = A[k][j-2];
+                B[j-1][k] = A[k][j-1];
+                B[j][k] = A[k][j];
+            }
+        }    
     }
 
 }
